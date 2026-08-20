@@ -1,3 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - إضافة منتج</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f9; padding: 20px; direction: rtl; }
+        .form-container { max-width: 500px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2e7d32; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #2e7d32; color: #fff; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+        button:hover { background: #1b5e20; }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>إضافة منتج جديد</h2>
+    <form id="addProductForm">
+        <div class="form-group">
+            <label>اسم المنتج:</label>
+            <input type="text" id="pTitle" required placeholder="مثال: مبيد حشري ممتاز">
+        </div>
+        <div class="form-group">
+            <label>وصف المنتج:</label>
+            <textarea id="pDesc" rows="3" required placeholder="وصف المختصر للمنتج..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>السعر الأصلي (قبل الخصم):</label>
+            <input type="number" id="pOldPrice" required placeholder="300">
+        </div>
+        <div class="form-group">
+            <label>السعر بعد الخصم:</label>
+            <input type="number" id="pPrice" required placeholder="200">
+        </div>
+        <div class="form-group">
+            <label>شارة العرض (Badge):</label>
+            <input type="text" id="pBadge" placeholder="مثال: خصم 30% أو عرض خاص">
+        </div>
+        <button type="submit" id="submitBtn">نشر المنتج 🚀</button>
+    </form>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -15,22 +61,34 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+    const form = document.getElementById('addProductForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        submitBtn.disabled = true;
+        submitBtn.innerText = "جاري النشر...";
         
         try {
             await addDoc(collection(db, "products"), {
                 title: document.getElementById('pTitle').value,
                 desc: document.getElementById('pDesc').value,
-                oldPrice: document.getElementById('pOldPrice').value,
-                price: document.getElementById('pPrice').value,
+                oldPrice: Number(document.getElementById('pOldPrice').value),
+                price: Number(document.getElementById('pPrice').value),
                 badge: document.getElementById('pBadge').value,
                 createdAt: new Date()
             });
             alert('تم نشر المنتج والخصم بنجاح! 🚀');
-            document.getElementById('addProductForm').reset();
+            form.reset();
         } catch (error) {
-            alert('حدث خطأ: ' + error.message);
+            console.error("Firebase Error:", error);
+            alert('حدث خطأ أثناء الحفظ: ' + error.message);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "نشر المنتج 🚀";
         }
     });
 </script>
+
+</body>
+</html>
